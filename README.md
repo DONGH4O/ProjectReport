@@ -8,21 +8,21 @@ R code for the Imperial summer project
 ############
 
 
-#Set up
-d<-1024
+
+d<-1024#Set up
 eps<-c(0.001,0.005,0.01,0.1,0.25)
 sig<-c(1,1,1)
 amp<-c(0.5,1,3,5,7)
 repl<-50
 
 
-##make data simulations
-data.sim<-function(Eps,Amp,d){
+
+data.sim<-function(Eps,Amp,d){##make data simulations
 ind<-sample(1:d,d*eps[Eps],replace=FALSE)
 thet<-(c(1:d) %in% ind)*amp[Amp]
 rnorm(d,mean=0,sd=sig[Sig])+thet
 }
-#trace plot
+#trace plot#
 d.100<-data.sim(3,3,100)
 d.10000<-data.sim(3,3,10000)
 eps.1<-data.sim(1,3,1000)
@@ -39,17 +39,17 @@ plot(amp.1,type = "l",ylab = "data value",main = "amplitude=0.5")
 plot(amp.5,type = "l",ylab = "data value",main = "amplitude=3")
 
 
-#SURE
+#SURE#
 SURE<-function(Sam,Sig,Lam){
   #d*sig[Sig]^2+2*sig[Sig]^2*Lam*sum((Sam>Lam)-(Sam<(-Lam))+Sam*(abs(Sam)<=Lam))-sum(abs(Sam)<=Lam)
   d*sig[Sig]^2-2*sig[Sig]^2*sum((abs(Sam)<=Lam))+sum(Sam^2*(Sam^2<=Lam^2)+Lam^2*(Sam^2>Lam^2))
 }
 
-#Soft Threshold
+#Soft Threshold#
 mu.est<-function(Mu,Lam){
   (Mu<(-Lam))*(Mu+Lam)+(Mu>Lam)*(Mu-Lam)
 }
-#Lam
+#Lam#
 Lam.ind<-function(Mu.sort,d,Sig){
   sure<-sapply(1:d,function(i){
     lambda<-rep(abs(Mu.sort[i]),d)
@@ -59,16 +59,16 @@ Lam.ind<-function(Mu.sort,d,Sig){
 }
 
 
-#estimation
+#estimation#
 estimat<-function(Eps,Amp,Sig,d){
   ind<-sample(1:d,d*eps[Eps],replace=FALSE)
   thet<-(c(1:d) %in% ind)*amp[Amp]
   mu<-rnorm(d,mean=0,sd=sig[Sig])+thet
-  #SURE
+  #SURE#
   lamind<-Lam.ind(mu,d,Sig)
   lam<-rep(abs(mu[lamind]),d)
   su.est<-mu.est(mu,lam)
-  #D-J
+  #D-J#
   lam.F<-rep(sqrt(2*log(d)),d)
   dj.est<-mu.est(mu,lam.F)
   list("mu"=mu,"su.est"=su.est,"dj.est"=dj.est,"thet"=thet)
@@ -88,24 +88,24 @@ legend("topleft",legend = c("Data","SUREshrink","sqrt(2log n)","theta"),col = c(
 
 
 
-#MSE comparison
+#MSE comparison#
 sam.mak<-function(Eps,Sig,Amp){
   ind<-sample(1:d,d*eps[Eps],replace=FALSE)
   thet<-(c(1:d) %in% ind)*amp[Amp]
   mu<-rnorm(d,mean=0,sd=sig[Sig])+thet
-  #SURE method
+  #SURE method#
   mu.sort<-sort(mu)
   lamind<-Lam.ind(mu.sort,d,Sig)
   lam<-rep(abs(mu.sort[lamind]),d)
   Mse.S<-mean((mu.est(mu,lam)-thet)^2)
-  #New method
+  #New method#
   lam.F<-rep(sqrt(2*log(d)),d)
   Mse.F<-mean((mu.est(mu,lam.F)-thet)^2)
   list(Mse.s=Mse.S,Mse.f=Mse.F)
 }
 
 
-#First plot when level of sparsity changes
+#First plot when level of sparsity changes#
 mse.15.3<-sapply(1:length(eps),function(i) replicate(repl,sam.mak(i,1,3)))
 
 
@@ -124,7 +124,7 @@ legend("topleft",legend = c("SUREshrink","Global rule"),fill = c(0,1))
 
 
 
-#second plot when level of amplitude changes
+#second plot when level of amplitude changes#
 mse.3.15<-sapply(1:length(amp),function(i) replicate(repl,sam.mak(3,1,i)))
 
 
@@ -155,17 +155,17 @@ fdr<-function(thet,zeroind){
 }
 
 fdr.make<-function(Amp,Eps,Sig,d){
-  #generating data
+  #generating data#
   ind<-sample(1:d,d*eps[Eps],replace=FALSE)
   thet<-(c(1:d) %in% ind)*amp[Amp]
   mu<-rnorm(d,mean=0,sd=sig[Sig])+thet
-  #SURE method
+  #SURE method#
   lamind<-Lam.ind(mu,d,Sig)
   lam<-rep(abs(mu[lamind]),d)
   su.est<-mu.est(mu,lam)
   su.zin<-which(su.est!=0)
   su.fd<-fdr(thet,su.zin)
-  #D-J method
+  #D-J method#
   lam.F<-rep(sqrt(2*log(d)),d)
   dj.est<-mu.est(mu,lam.F)
   dj.zin<-which(dj.est!=0)
@@ -247,43 +247,43 @@ write.table(mse.comb,file = "E:/Documents/Imperial College London/Project/data/s
 ##############################
 
 
-###Hybrid method
+###Hybrid method#
 sdsq<-function(Sam,d){
   sum(Sam^2-1)/d
 }
 gam<-function(d){
   log(d,base = 2)^1.5/sqrt(d)
 }
-#adaptive method
+#adaptive method#
 adrep<-function(Theta,Sig,d){
   mu<-rnorm(d,mean=0,sd=sig[Sig])+Theta
   mu.sort<-sort(mu)
   lamind<-Lam.ind(mu.sort,d,Sig)
   lam<-rep(abs(mu.sort[lamind]),d)
   Mse.S<-mean((mu.est(mu,lam)-Theta)^2)
-  #New method
+  #New method#
   lam.F<-rep(sqrt(2*log(d)),d)
   Mse.F<-mean((mu.est(mu,lam.F)-Theta)^2)
   max(c(0,1)*c(Mse.S<=Mse.F,Mse.F<Mse.S))
 }
 
 
-##Test four new method
+##Test four new method#
 examin<-function(Amp,Eps,Sig,d,ad.repl){
-  #generating data
+  #generating data#
   ind<-sample(1:d,d*eps[Eps],replace=FALSE)
   thet<-(c(1:d) %in% ind)*amp[Amp]
   mu<-rnorm(d,mean=0,sd=sig[Sig])+thet
-  #SURE method
+  #SURE method#
   lamind<-Lam.ind(mu,d,Sig)
   lam<-rep(abs(mu[lamind]),d)
   Mse.S<-mean((mu.est(mu,lam)-thet)^2)
-  #New method
+  #New method#
   lam.F<-rep(sqrt(2*log(d)),d)
   Mse.F<-mean((mu.est(mu,lam.F)-thet)^2)
   su.m<-Mse.S
   dj.m<-Mse.F
-  #hybrid method
+  #hybrid method#
   benc<-sdsq(mu,d)
   thres<-gam(d)
   if(benc<=thres) {
@@ -291,7 +291,7 @@ examin<-function(Amp,Eps,Sig,d,ad.repl){
   }else{
     hy.m<-Mse.S
   }
-  #adaptive method
+  #adaptive method#
   lam.ad<-rep(sqrt(2*log(d)),d)
   mu.ad<-mu.est(mu,lam.ad)
   ad.resu<-replicate(ad.repl,adrep(mu.ad,Sig,d))
@@ -318,8 +318,8 @@ compare.result.33<-comp(3,3,1,1024,500,1000)
 compare.result.43<-comp(4,3,1,1024,500,1000)
 compare.result.53<-comp(5,3,1,1024,500,1000)
 
-#compare.result.31<-comp(3,1,1,1024,500,1000)
-#compare.result.32<-comp(3,2,1,1024,500,1000)
+#compare.result.31<-comp(3,1,1,1024,500,1000)#
+#compare.result.32<-comp(3,2,1,1024,500,1000)#
 #compare.result.33<-comp(3,3,1,1024,500,1000)#already have
 compare.result.34<-comp(3,4,1,1024,500,1000)
 compare.result.35<-comp(3,5,1,1024,500,1000)
@@ -356,7 +356,7 @@ write.table(ampl,file = "E:/Documents/Imperial College London/Project/data/ampl_
 
 
 
-#Graph
+#Graph#
 par(mfrow=c(2,2))
 
 plot(eps,spar[2,],ylim=c(0,2000) ,main = "Total mse amoung four methods for sparsity changing (Global rule base)",xlab = "Proportion of sparsity",ylab = "Mse",type = "l")
@@ -387,28 +387,28 @@ fdr<-function(thet,zeroind){
 }
 }
 fdr.find<-function(Amp,Eps,Sig,d,ad.repl){
-  #generating data
+  #generating data#
   ind<-sample(1:d,d*eps[Eps],replace=FALSE)
   thet<-(c(1:d) %in% ind)*amp[Amp]
   mu<-rnorm(d,mean=0,sd=sig[Sig])+thet
-  #SURE method
+  #SURE method#
   lamind<-Lam.ind(mu,d,Sig)
   lam<-rep(abs(mu[lamind]),d)
   su.est<-mu.est(mu,lam)
   su.zin<-which(su.est!=0)
   su.fd<-fdr(thet,su.zin)
-  #D-J method
+  #D-J method#
   lam.F<-rep(sqrt(2*log(d)),d)
   dj.est<-mu.est(mu,lam.F)
   dj.zin<-which(dj.est!=0)
   dj.fd<-fdr(thet,dj.zin)
   fdr.cho<-c(su.fd,dj.fd)
-  #hybrid method
+  #hybrid method#
   benc<-sdsq(mu,d)
   thres<-gam(d)
   hy.ind<-(benc<=thres)+1
   hy.fd<-fdr.cho[hy.ind]
-  #adaptive method
+  #adaptive method#
   lam.ad<-rep(sqrt(2*log(d)),d)
   mu.ad<-mu.est(mu,lam.ad)
   ad.resu<-replicate(ad.repl,adrep(mu.ad,Sig,d))
@@ -488,28 +488,28 @@ legend(x=0.24,y=0.6,legend = c("Sure method","Globalrule method","Hybrid method"
 ###########
 
 
-###Hybrid method
+###Hybrid method#
 sdsq<-function(Sam,d){
   sum(Sam^2-1)/d
 }
 gam<-function(d){
   log(d,base = 2)^1.5/sqrt(d)
 }
-#adaptive method
+#adaptive method#
 adrep<-function(Theta,Sig,d){
   mu<-rnorm(d,mean=0,sd=sig[Sig])+Theta
   mu.sort<-sort(mu)
   lamind<-Lam.ind(mu.sort,d,Sig)
   lam<-rep(abs(mu.sort[lamind]),d)
   Mse.S<-mean((mu.est(mu,lam)-Theta)^2)
-  #New method
+  #New method#
   lam.F<-rep(sqrt(2*log(d)),d)
   Mse.F<-mean((mu.est(mu,lam.F)-Theta)^2)
   max(c(0,1)*c(Mse.S<=Mse.F,Mse.F<Mse.S))
 }
 
 
-##Test four new method
+##Test four new method#
 examin.su<-function(Amp,Eps,Sig,d,ad.repl){
   #generating data
   ind<-sample(1:d,d*eps[Eps],replace=FALSE)
@@ -533,7 +533,7 @@ examin.su<-function(Amp,Eps,Sig,d,ad.repl){
   }else{
     hy.m<-Mse.S
   }
-  #adaptive method
+  #adaptive method#
   mu.su<-mu.est(mu,lam)
   ad.resu<-replicate(ad.repl,adrep(mu.su,Sig,d))
   ad.cho<-round(mean(ad.resu),0)
@@ -561,7 +561,7 @@ compare.result.35.su<-comp(3,5,1,1024,500,1000)
 
 compare.result.13.su<-comp.su(1,3,1,1024,500,1000)#calculated
 compare.result.23.su<-comp.su(2,3,1,1024,500,1000)#
-#compare.result.33.su<-comp.su(3,3,1,1024,500,1000)
+#compare.result.33.su<-comp.su(3,3,1,1024,500,1000)#
 compare.result.43.su<-comp.su(4,3,1,1024,500,1000)#
 compare.result.53.su<-comp.su(5,3,1,1024,500,1000)#
 
@@ -592,30 +592,30 @@ compare.result.3.13.su<-parSapply(cl,c(1,2,3),function(i) comp.su(3,i,1,1024,500
 ###########
 
 
-######new method with SURE as initial
+######new method with SURE as initial###
 fdr.find.SUREbase<-function(Amp,Eps,Sig,d,ad.repl){
-  #generating data
+  #generating data#
   ind<-sample(1:d,d*eps[Eps],replace=FALSE)
   thet<-(c(1:d) %in% ind)*amp[Amp]
   mu<-rnorm(d,mean=0,sd=sig[Sig])+thet
-  #SURE method
+  #SURE method#
   lamind<-Lam.ind(mu,d,Sig)
   lam<-rep(abs(mu[lamind]),d)
   su.est<-mu.est(mu,lam)
   su.zin<-which(su.est!=0)
   su.fd<-fdr(thet,su.zin)
-  #D-J method
+  #D-J method#
   lam.F<-rep(sqrt(2*log(d)),d)
   dj.est<-mu.est(mu,lam.F)
   dj.zin<-which(dj.est!=0)
   dj.fd<-fdr(thet,dj.zin)
   fdr.cho<-c(su.fd,dj.fd)
-  #hybrid method
+  #hybrid method#
   benc<-sdsq(mu,d)
   thres<-gam(d)
   hy.ind<-(benc<=thres)+1
   hy.fd<-fdr.cho[hy.ind]
-  #adaptive method
+  #adaptive method#
   mu.su<-su.est
   ad.resu<-replicate(ad.repl,adrep(mu.su,Sig,d))
   ad.cho<-round(mean(ad.resu),0)+1
@@ -742,7 +742,7 @@ legend("topleft",legend = c("Hybrid method","Adaptive method","SUREshrink method
 
 
 
-#############choosing rate
+#####choosing rate####
 cr<-function(Amp,Eps,Sig,d,ad.repl){
   ind<-sample(1:d,d*eps[Eps],replace=FALSE)
   thet<-(c(1:d) %in% ind)*amp[Amp]
@@ -762,7 +762,7 @@ cr<-function(Amp,Eps,Sig,d,ad.repl){
   mu.su<-mu.est(mu,lam.su)
   ad.resu.su<-replicate(ad.repl,adrep(mu.su,Sig,d))
   ad.su<-round(mean(ad.resu.su),0)
-  #### 1=DJ, 0=SURE
+  #### 1=DJ, 0=SURE###
   list('hy'=hy,'ad'=ad,'ad.su'=ad.su)
 }
 
